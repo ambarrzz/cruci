@@ -20,21 +20,12 @@ export const puzzleData = {
     { number: 13, clue: 'Ciclo de trabajo repetitivo en el que se planifica, desarrolla y revisa un conjunto de funcionalidades.', answer: 'ITERACION', orientation: 'across', row: 11, col: 9 },
     { number: 14, clue: 'Proceso de verificar que un sistema funciona correctamente y cumple con los requerimientos definidos.', answer: 'TESTING', orientation: 'across', row: 13, col: 0 },
     { number: 15, clue: 'Evento en Scrum donde el equipo define qué trabajo se realizará en el próximo sprint.', answer: 'PLANNING', orientation: 'across', row: 15, col: 6 },
-    { number: 16, clue: 'Reunión al final del sprint para reflexionar sobre lo que funcionó bien y qué puede mejorarse.', answer: 'RETROSPECTIVA', orientation: 'across', row: 5, col: 14 },
-    { number: 17, clue: 'Reunión diaria de corta duración donde el equipo comparte avances, obstáculos y planes del día.', answer: 'DAILY', orientation: 'across', row: 7, col: 14 },
-    { number: 18, clue: 'Representación temporal del plan del proyecto, con fechas estimadas de cada actividad.', answer: 'CRONOGRAMA', orientation: 'across', row: 9, col: 12 },
-    { number: 19, clue: 'Plataforma de alojamiento de código que facilita la colaboración, control de versiones y despliegue continuo.', answer: 'GITHUB', orientation: 'across', row: 1, col: 0 },
-    { number: 20, clue: 'Gran cuerpo de trabajo que puede dividirse en múltiples historias de usuario más pequeñas.', answer: 'EPIC', orientation: 'across', row: 17, col: 0 },
-    { number: 21, clue: 'Unidad pequeña y concreta de trabajo que forma parte de una historia o funcionalidad.', answer: 'TASK', orientation: 'across', row: 19, col: 6 },
-  
+
     { number: 2, clue: 'Funcionalidad o característica del software que aporta valor al usuario final.', answer: 'FEATURE', orientation: 'down', row: 1, col: 10 },
     { number: 3, clue: 'Periodo de tiempo fijo en Scrum (generalmente 1 a 4 semanas) durante el cual se desarrolla un incremento del producto.', answer: 'SPRINT', orientation: 'down', row: 2, col: 5 },
     { number: 6, clue: 'Configuración específica de software y hardware donde se ejecuta una aplicación (ej.: desarrollo, testing, producción).', answer: 'ENOTORNO', orientation: 'down', row: 3, col: 13 },
     { number: 8, clue: 'Etapa donde se define la arquitectura, componentes y estética de la solución antes de su implementación.', answer: 'DISEÑO', orientation: 'down', row: 6, col: 2 },
     { number: 10, clue: 'Fase en la que se escribe el código y se construye el sistema según lo diseñado.', answer: 'IMPLEMENTACION', orientation: 'down', row: 7, col: 8 },
     { number: 12, clue: 'Entorno donde el software ya ha sido liberado y está siendo usado por los usuarios finales.', answer: 'PRODUCCION', orientation: 'down', row: 9, col: 11 },
-    { number: 22, clue: "Siglas de 'User Acceptance Testing', prueba final realizada por el usuario para validar que el sistema cumple sus necesidades.", answer: 'UAT', orientation: 'down', row: 11, col: 4 },
-    { number: 23, clue: "Siglas de 'Proof of Concept', versión preliminar que demuestra la viabilidad de una idea o tecnología.", answer: 'POC', orientation: 'down', row: 11, col: 16 },
-    { number: 24, clue: 'Error o fallo en el software que causa un comportamiento incorrecto o no deseado.', answer: 'BUG', orientation: 'down', row: 1, col: 18 }
   ]
 };
