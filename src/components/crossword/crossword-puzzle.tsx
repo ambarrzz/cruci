@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from 'react';
-import { Check, RotateCw, Trophy } from 'lucide-react';
+import { Check, RotateCw, Trophy, Mail } from 'lucide-react';
 import { puzzleData } from '@/lib/puzzle-data';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -45,7 +45,7 @@ export default function CrosswordPuzzle() {
 
   const handleInputChange = (row: number, col: number, value: string) => {
     const newGrid = [...grid.map(row => [...row])];
-    newGrid[row][col] = value;
+    newGrid[row][col] = value.toUpperCase();
     setGrid(newGrid);
   };
 
@@ -64,11 +64,11 @@ export default function CrosswordPuzzle() {
       let currentWord = '';
       let { row, col } = word;
       for (let i = 0; i < word.answer.length; i++) {
-        currentWord += grid[row][col];
+        currentWord += (grid[row][col] || '').toUpperCase();
         if (word.orientation === 'across') col++; else row++;
       }
-
-      if (currentWord.toUpperCase() === word.answer) {
+      
+      if (currentWord === word.answer) {
         let { row: r, col: c } = word;
         for (let i = 0; i < word.answer.length; i++) {
           newCorrectCells[r][c] = true;
@@ -86,23 +86,30 @@ export default function CrosswordPuzzle() {
     } else {
       toast({
         title: "Hay algunas respuestas incorrectas",
-        description: "¡Sigue intentándolo! Las palabras correctas están resaltadas en el color de acento.",
+        description: "¡Sigue intentándolo! Las palabras correctas están resaltadas.",
         variant: "default",
       });
     }
   };
   
   const handleReset = () => {
-    setGrid(emptyGrid);
+    const newGrid = Array(puzzleData.gridSize).fill(null).map(() => Array(puzzleData.gridSize).fill(''));
+    setGrid(newGrid);
     setCorrectCells(emptyCorrectCells);
     setIsSolved(false);
     toast({ title: "El crucigrama ha sido reiniciado." });
+  };
+  
+  const handleSendEmail = () => {
+    const subject = "¡He resuelto el CodeWord Puzzle!";
+    const body = `¡Hola! Logré completar el crucigrama y la palabra clave es: ${puzzleData.keyWord}`;
+    window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   };
 
   return (
     <>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
-        <Card className="lg:col-span-2 p-4 sm:p-6 flex items-center justify-center">
+        <Card className="lg:col-span-2 p-2 sm:p-4 flex items-center justify-center overflow-hidden">
           <CrosswordGrid
             grid={grid}
             correctCells={correctCells}
@@ -127,19 +134,24 @@ export default function CrosswordPuzzle() {
       <AlertDialog open={isSolved} onOpenChange={setIsSolved}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center justify-center text-2xl text-center">
-              <Trophy className="text-accent w-8 h-8 mr-2" />
+            <AlertDialogTitle className="flex items-center justify-center text-2xl sm:text-3xl text-center">
+              <Trophy className="text-accent w-8 h-8 sm:w-10 sm:h-10 mr-2" />
               ¡Felicidades!
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-center text-lg">
+            <AlertDialogDescription className="text-center text-base sm:text-lg px-4">
               Has completado el crucigrama exitosamente. La palabra clave es:
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="my-6 text-center">
-            <p className="text-5xl font-bold text-accent tracking-widest">{puzzleData.keyWord}</p>
+             <p className="text-5xl sm:text-7xl font-bold text-accent tracking-[0.3em] animate-pulse">
+                {puzzleData.keyWord}
+             </p>
           </div>
-          <AlertDialogFooter>
-            <AlertDialogAction onClick={() => setIsSolved(false)} className="w-full">Cerrar</AlertDialogAction>
+          <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+            <Button onClick={handleSendEmail} className="w-full">
+              <Mail className="mr-2 h-5 w-5" /> Enviar por email
+            </Button>
+            <AlertDialogAction onClick={() => setIsSolved(false)} className="w-full" autoFocus>Cerrar</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

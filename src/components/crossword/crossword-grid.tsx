@@ -14,9 +14,27 @@ type CrosswordGridProps = {
 
 export default function CrosswordGrid({ grid, correctCells, activeCells, onInputChange, inputRefs }: CrosswordGridProps) {
   
+  const [focusedCell, setFocusedCell] = React.useState<{row: number, col: number} | null>(null);
+
+  React.useEffect(() => {
+    if (inputRefs.current[0][0]) {
+      // Find first input cell and focus it.
+      for (let row = 0; row < puzzleData.gridSize; row++) {
+        for (let col = 0; col < puzzleData.gridSize; col++) {
+          if (activeCells.has(`${row}-${col}`)) {
+             inputRefs.current[row][col]?.focus();
+             return;
+          }
+        }
+      }
+    }
+  }, [activeCells, inputRefs]);
+
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, row: number, col: number) => {
     let nextRow = row, nextCol = col;
     let moved = false;
+    const currentOrientation = getWordOrientation(row, col);
     
     switch (e.key) {
       case 'ArrowUp':
@@ -37,22 +55,18 @@ export default function CrosswordGrid({ grid, correctCells, activeCells, onInput
         break;
       case 'Backspace':
         if (!grid[row][col]) {
-          const word = puzzleData.words.find(w => {
-            if (w.orientation === 'across') return row === w.row && col > w.col && col <= w.col + w.answer.length;
-            return false;
-          });
-          if (word) {
-            nextCol--; moved = true;
-          } else {
-             nextRow--; moved = true;
-          }
+           if (currentOrientation === 'across') {
+             nextCol--;
+           } else {
+             nextRow--;
+           }
+           moved = true;
         }
         break;
     }
 
     if (moved) {
       e.preventDefault();
-      // Find the next available input cell in the direction of movement
       while(nextRow >= 0 && nextRow < puzzleData.gridSize && nextCol >= 0 && nextCol < puzzleData.gridSize) {
         if (activeCells.has(`${nextRow}-${nextCol}`)) {
           inputRefs.current[nextRow][nextCol]?.focus();
@@ -62,39 +76,47 @@ export default function CrosswordGrid({ grid, correctCells, activeCells, onInput
         else if (e.key === 'ArrowDown') nextRow++;
         else if (e.key === 'ArrowLeft') nextCol--;
         else if (e.key === 'ArrowRight') nextCol++;
-        else if (e.key === 'Backspace') { // simplified backspace logic
-            if (col > 0) {
-                 if (activeCells.has(`${row}-${col-1}`)) {
-                    inputRefs.current[row][col-1]?.focus();
-                 }
+        else if (e.key === 'Backspace') {
+            if (currentOrientation === 'across') {
+              if (activeCells.has(`${row}-${nextCol}`)) {
+                  inputRefs.current[row][nextCol]?.focus();
+              }
+            } else {
+              if (activeCells.has(`${nextRow}-${col}`)) {
+                  inputRefs.current[nextRow][col]?.focus();
+              }
             }
             break;
         }
-        else break; // safety break
+        else break;
       }
     }
   };
+
+  const getWordOrientation = (row: number, col: number) => {
+    const downWord = puzzleData.words.find(w => w.orientation === 'down' && col === w.col && row >= w.row && row < w.row + w.answer.length);
+    if(downWord) return 'down';
+    return 'across';
+  }
 
   const handleInput = (e: React.FormEvent<HTMLInputElement>, row: number, col: number) => {
     const target = e.target as HTMLInputElement;
     let { value } = target;
 
+    value = value.toUpperCase();
     if (value.length > 1) {
       value = value.charAt(value.length-1);
     }
     onInputChange(row, col, value);
     
     if (value) {
-      // Auto-advance logic
       let nextRow = row, nextCol = col;
-      
-      const acrossWord = puzzleData.words.find(w => w.orientation === 'across' && row === w.row && col >= w.col && col < w.col + w.answer.length -1);
-      const downWord = puzzleData.words.find(w => w.orientation === 'down' && col === w.col && row >= w.row && row < w.row + w.answer.length - 1);
-      
-      if (acrossWord) {
-        nextCol++;
-      } else if (downWord) {
-        nextRow++;
+      const currentOrientation = getWordOrientation(row, col);
+
+      if (currentOrientation === 'across') {
+         nextCol++;
+      } else {
+         nextRow++;
       }
 
       if (activeCells.has(`${nextRow}-${nextCol}`)) {
@@ -103,7 +125,6 @@ export default function CrosswordGrid({ grid, correctCells, activeCells, onInput
     }
   }
 
-
   return (
     <div
       className="grid"
@@ -111,28 +132,31 @@ export default function CrosswordGrid({ grid, correctCells, activeCells, onInput
         gridTemplateColumns: `repeat(${puzzleData.gridSize}, minmax(0, 1fr))`,
         gridTemplateRows: `repeat(${puzzleData.gridSize}, minmax(0, 1fr))`,
         aspectRatio: '1 / 1',
-        maxWidth: 'calc(100vh - 200px)',
+        maxWidth: 'calc(100vh - 220px)',
         maxHeight: 'calc(100vw - 40px)',
         width: '100%',
+        margin: 'auto',
       }}
     >
-      {grid.map((rowItems, row) =>
-        rowItems.map((_, col) => {
+      {Array.from({ length: puzzleData.gridSize }).map((_, row) =>
+        Array.from({ length: puzzleData.gridSize }).map((_, col) => {
           const cellKey = `${row}-${col}`;
           const isInput = activeCells.has(cellKey);
           const cellNumber = activeCells.get(cellKey)?.number;
+          const isFocused = focusedCell?.row === row && focusedCell?.col === col;
 
           return (
             <div
               key={cellKey}
               className={cn(
-                'relative flex items-center justify-center border',
-                isInput ? 'bg-card' : 'bg-muted/30 border-muted/50',
-                correctCells[row][col] && 'bg-accent/80 transition-colors duration-500'
+                'relative flex items-center justify-center border border-muted/50',
+                isInput ? 'bg-card' : 'bg-muted/30',
+                correctCells[row][col] && 'bg-accent/80',
+                isFocused && 'ring-2 ring-primary ring-inset'
               )}
             >
               {cellNumber && (
-                <span className="absolute top-0.5 left-1 text-xs text-muted-foreground select-none">
+                <span className="absolute top-0.5 left-1 text-[10px] sm:text-xs text-muted-foreground select-none">
                   {cellNumber}
                 </span>
               )}
@@ -142,11 +166,13 @@ export default function CrosswordGrid({ grid, correctCells, activeCells, onInput
                   type="text"
                   maxLength={1}
                   value={grid[row][col] || ''}
+                  onFocus={() => setFocusedCell({row, col})}
+                  onBlur={() => setFocusedCell(null)}
                   onInput={(e) => handleInput(e, row, col)}
                   onKeyDown={(e) => handleKeyDown(e, row, col)}
                   className={cn(
-                    'w-full h-full bg-transparent text-center text-lg sm:text-xl md:text-2xl font-bold uppercase p-0 border-none focus:ring-2 focus:ring-primary rounded-none',
-                     correctCells[row][col] && 'text-accent-foreground caret-accent-foreground'
+                    'w-full h-full bg-transparent text-center text-base sm:text-lg md:text-xl font-bold uppercase p-0 border-none focus:outline-none focus:ring-0 rounded-none',
+                     correctCells[row][col] ? 'text-accent-foreground caret-accent-foreground' : 'text-foreground caret-primary'
                   )}
                   aria-label={`casilla ${row}, ${col}`}
                 />
